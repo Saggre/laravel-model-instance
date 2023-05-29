@@ -39,6 +39,8 @@ class ModelInstanceServiceProvider extends ServiceProvider implements Deferrable
             );
         });
 
+        $this->app->alias('command.model-instance', ModelInstanceCommand::class);
+
         $this->commands(['command.model-instance']);
     }
 
