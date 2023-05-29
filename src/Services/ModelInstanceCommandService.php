@@ -5,14 +5,13 @@ namespace Saggre\LaravelModelInstance\Services;
 use Illuminate\Support\Collection;
 use Spatie\ModelInfo\ModelFinder;
 
-use function App\Services\class_basename;
-
 class ModelInstanceCommandService
 {
     /**
      * Normalize a model name to a class name (not class path).
      *
      * @param string $model
+     *
      * @return string
      */
     public function normalizeModelName(string $model): string
@@ -41,12 +40,13 @@ class ModelInstanceCommandService
      * Find class path candidates for the given model name.
      *
      * @param string $model
+     *
      * @return Collection
      */
     public function findAppModelCandidateClassPaths(string $model): Collection
     {
         $appModels = $this->getAppModelClassPaths();
-        $model = $this->normalizeModelName($model);
+        $model     = $this->normalizeModelName($model);
 
         return $appModels->filter(
             fn($appModelClassPath) => $model === class_basename($appModelClassPath)

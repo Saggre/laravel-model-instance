@@ -5,7 +5,8 @@ namespace Saggre\LaravelModelInstance;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Tinker\Console\TinkerCommand;
+use Saggre\LaravelModelInstance\Console\ModelInstanceCommand;
+use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
 
 class ModelInstanceServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -16,15 +17,13 @@ class ModelInstanceServiceProvider extends ServiceProvider implements Deferrable
      */
     public function boot()
     {
-        $source = realpath($raw = __DIR__ . '/../config/tinker.php') ?: $raw;
+        $source = realpath($raw = __DIR__.'/../config/instance-command.php') ?: $raw;
 
         if ($this->app instanceof LaravelApplication && $this->app->runningInConsole()) {
-            $this->publishes([$source => config_path('tinker.php')]);
-        } elseif ($this->app instanceof LumenApplication) {
-            $this->app->configure('tinker');
+            $this->publishes([$source => config_path('instance-command.php')]);
         }
 
-        $this->mergeConfigFrom($source, 'tinker');
+        $this->mergeConfigFrom($source, 'instance-command');
     }
 
     /**
@@ -34,11 +33,13 @@ class ModelInstanceServiceProvider extends ServiceProvider implements Deferrable
      */
     public function register()
     {
-        $this->app->singleton('command.tinker', function () {
-            return new TinkerCommand;
+        $this->app->singleton('command.model-instance', function () {
+            return new ModelInstanceCommand(
+                new ModelInstanceCommandService()
+            );
         });
 
-        $this->commands(['command.tinker']);
+        $this->commands(['command.model-instance']);
     }
 
     /**
@@ -48,6 +49,6 @@ class ModelInstanceServiceProvider extends ServiceProvider implements Deferrable
      */
     public function provides()
     {
-        return ['command.tinker'];
+        return ['command.model-instance'];
     }
 }

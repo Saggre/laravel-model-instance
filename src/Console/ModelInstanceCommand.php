@@ -2,15 +2,12 @@
 
 namespace Saggre\LaravelModelInstance\Console;
 
-use App\Services\ModelInstanceCommandService;
-use App\Traits\CreatesInstances;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
+use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
+use Saggre\LaravelModelInstance\Traits\CreatesInstances;
 use Spatie\ModelInfo\Attributes\Attribute;
 use Spatie\ModelInfo\ModelInfo;
-
-use function App\Console\Commands\class_basename;
-use function App\Console\Commands\collect;
 
 class ModelInstanceCommand extends Command
 {
@@ -57,15 +54,15 @@ class ModelInstanceCommand extends Command
 
         $this->output->info("Selected $classPath");
 
-        if (!class_exists($classPath)) {
+        if ( ! class_exists($classPath)) {
             $this->output->error("No class path found for $classPath");
 
             return self::FAILURE;
         }
 
         $modelInstance = new $classPath;
-        $modelInfo = ModelInfo::forModel($modelInstance);
-        $modelName = class_basename($classPath);
+        $modelInfo     = ModelInfo::forModel($modelInstance);
+        $modelName     = class_basename($classPath);
 
         $hiddenKeys = array_merge(
             $modelInstance->instanceHidden ?? [],
@@ -83,7 +80,7 @@ class ModelInstanceCommand extends Command
         );
 
         $fillableAttributes = $fillableAttributes->filter(
-            fn(Attribute $attribute) => !in_array($attribute->name, $hiddenKeys)
+            fn(Attribute $attribute) => ! in_array($attribute->name, $hiddenKeys)
         );
 
         /*$requiredAttributes = $modelInfo->attributes->filter(
@@ -94,7 +91,7 @@ class ModelInstanceCommand extends Command
 
         $relationAttributes = [];
         foreach ($modelInfo->attributes as $attribute) {
-            if (!str_ends_with($attribute->name, '_id')) {
+            if ( ! str_ends_with($attribute->name, '_id')) {
                 continue;
             }
 
@@ -109,12 +106,12 @@ class ModelInstanceCommand extends Command
         $relationAttributes = collect($relationAttributes);
 
         $requiredRelationAttributes = $relationAttributes->filter(
-            fn(Attribute $attribute) => !$attribute->nullable
+            fn(Attribute $attribute) => ! $attribute->nullable
         );
 
         $fillableAttributes->each(function (Attribute $attribute) use (&$modelInstance, $hiddenKeys) {
-            $key = $attribute->name;
-            $value = $this->ask("Set value for $key", $attribute->default);
+            $key                 = $attribute->name;
+            $value               = $this->ask("Set value for $key", $attribute->default);
             $modelInstance->$key = $value;
         });
 
