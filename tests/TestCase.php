@@ -10,4 +10,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     {
         return [ModelInstanceServiceProvider::class];
     }
+
+    public static function applicationBasePath(): string
+    {
+        return __DIR__.'/../skeleton';
+    }
 }
