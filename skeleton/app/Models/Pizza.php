@@ -1,25 +1,22 @@
 <?php
 
+namespace Saggre\LaravelModelInstance\Testbench\App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Pizza extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'street_address',
-        'street_address_2',
-        'city',
-        'postcode',
-        'state',
-        'iso_country',
+        'name',
     ];
 
-    public function addressable()
+    public function sauce()
     {
-        return $this->morphTo();
+        return $this->hasOne(Sauce::class);
+    }
+
+    public function toppings()
+    {
+        return $this->hasMany(Topping::class);
     }
 }

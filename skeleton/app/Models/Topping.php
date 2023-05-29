@@ -4,7 +4,7 @@ namespace Saggre\LaravelModelInstance\Testbench\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Sauce extends Model
+class Topping extends Model
 {
     protected $fillable = [
         'name',

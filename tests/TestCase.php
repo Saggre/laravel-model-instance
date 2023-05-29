@@ -4,7 +4,6 @@ namespace Saggre\LaravelModelInstance\Tests;
 
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Saggre\LaravelModelInstance\ModelInstanceServiceProvider;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -24,11 +23,11 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
 
     protected function getPackageProviders($app): array
     {
-        return [ModelInstanceServiceProvider::class];
+        return [TestModelInstanceServiceProvider::class];
     }
 
     public static function applicationBasePath(): string
     {
-        return __DIR__.'/../skeleton';
+        return dirname(__DIR__).'/skeleton';
     }
 }

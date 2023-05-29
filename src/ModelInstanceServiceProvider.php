@@ -33,6 +33,12 @@ class ModelInstanceServiceProvider extends ServiceProvider implements Deferrable
      */
     public function register()
     {
+        $this->registerBindings();
+        $this->registerCommands();
+    }
+
+    protected function registerBindings()
+    {
         $this->app->singleton('command.model-instance', function () {
             return new ModelInstanceCommand(
                 new ModelInstanceCommandService()
@@ -40,7 +46,10 @@ class ModelInstanceServiceProvider extends ServiceProvider implements Deferrable
         });
 
         $this->app->alias('command.model-instance', ModelInstanceCommand::class);
+    }
 
+    protected function registerCommands()
+    {
         $this->commands(['command.model-instance']);
     }
 

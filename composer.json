@@ -36,7 +36,10 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Saggre\\LaravelModelInstance\\Tests\\": "tests/"
+      "Saggre\\LaravelModelInstance\\Tests\\": "tests/",
+      "Saggre\\LaravelModelInstance\\Testbench\\App\\": "skeleton/app/",
+      "Saggre\\LaravelModelInstance\\Testbench\\Factories\\": "skeleton/database/factories/",
+      "Saggre\\LaravelModelInstance\\Testbench\\Seeders\\": "skeleton/database/seeders/"
     }
   },
   "extra": {
