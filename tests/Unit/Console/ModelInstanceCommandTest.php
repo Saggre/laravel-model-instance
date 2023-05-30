@@ -11,8 +11,8 @@ class ModelInstanceCommandTest extends TestCase
         parent::setUp();
     }
 
-    public function test_console_command(): void
+    public function test_instantiate_pizza(): void
     {
-        $this->artisan('instantiate Foo')->assertExitCode(0);
+        $this->artisan('instantiate Pizza')->assertExitCode(0);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Saggre\LaravelModelInstance\Console;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
@@ -32,20 +33,53 @@ class ModelInstanceCommand extends Command
 
     public function handle(): int
     {
+        try {
+            $classPath = $this->handleClassPath();
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+
+            return self::FAILURE;
+        }
+
+        $instance  = new $classPath;
+        $modelInfo = ModelInfo::forModel($classPath);
+        $modelName = class_basename($classPath);
+
+        /** @var Model&CreatesInstances $instance */
+
+        $this->handleAttributes($modelInfo, $instance);
+
+        $this->info($instance->toJson(JSON_PRETTY_PRINT));
+
+        if ($this->confirm("Create a $modelName", true)) {
+            $instance->save();
+        } else {
+            $this->output->error('Aborted instance creation');
+
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Query the user for the instantiated model's class path.
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function handleClassPath(): string
+    {
         $inputModel = $this->argument('model');
 
         if (empty($inputModel)) {
-            $this->output->error('No model name provided');
-
-            return self::FAILURE;
+            throw new Exception('No model name provided');
         }
 
         $classPaths = $this->modelInstanceCommandService->findAppModelCandidateClassPaths($inputModel);
 
         if ($classPaths->isEmpty()) {
-            $this->output->error("No class found for $inputModel");
-
-            return self::FAILURE;
+            throw new Exception("No class found for $inputModel");
         } elseif ($classPaths->count() === 1) {
             $classPath = $classPaths->first();
         } else {
@@ -55,78 +89,50 @@ class ModelInstanceCommand extends Command
         $this->output->info("Selected $classPath");
 
         if ( ! class_exists($classPath)) {
-            $this->output->error("No class path found for $classPath");
-
-            return self::FAILURE;
+            throw new Exception("No class path found for $classPath");
         }
 
-        $modelInstance = new $classPath;
-        $modelInfo     = ModelInfo::forModel($modelInstance);
-        $modelName     = class_basename($classPath);
+        return $classPath;
+    }
 
-        $hiddenKeys = array_merge(
+    /**
+     * Query the user for the instantiated model's properties.
+     *
+     * @param ModelInfo $modelInfo
+     * @param $instance
+     *
+     * @return void
+     */
+    public function handleAttributes(ModelInfo $modelInfo, &$instance): void
+    {
+        $hiddenAttributes = collect(array_merge(
             $modelInstance->instanceHidden ?? [],
             [
                 'id',
                 'created_at',
                 'updated_at',
             ]
-        );
+        ));
 
-        /** @var Model&CreatesInstances $modelInstance */
+        $modelInfo->attributes->each(function (Attribute $attribute) use (&$instance, $hiddenAttributes) {
+            $key   = $attribute->name;
+            $value = null;
 
-        $fillableAttributes = $modelInfo->attributes->filter(
-            fn(Attribute $attribute) => in_array($attribute->name, $modelInstance->getFillable())
-        );
+            if ($hiddenAttributes->contains($attribute->name)) {
+                $this->output->info("Skipped attribute $key");
 
-        $fillableAttributes = $fillableAttributes->filter(
-            fn(Attribute $attribute) => ! in_array($attribute->name, $hiddenKeys)
-        );
-
-        /*$requiredAttributes = $modelInfo->attributes->filter(
-            fn(Attribute $attribute) => !$attribute->nullable && $attribute->default !== null
-        );*/
-
-        // TODO: Get required relations.
-
-        $relationAttributes = [];
-        foreach ($modelInfo->attributes as $attribute) {
-            if ( ! str_ends_with($attribute->name, '_id')) {
-                continue;
+                return;
             }
 
-            $relation = substr($attribute->name, 0, -3);
+            while ($value === null || ! $attribute->nullable) {
+                $value = $this->ask("Set value for $key", $attribute->default);
 
-            // TODO: Can relation attributes also have other names?
-            if (method_exists($modelInstance, $relation) || method_exists($modelInstance, "{$relation}s")) {
-                $relationAttributes[$relation] = $attribute;
+                if ($value === null && ! $attribute->nullable) {
+                    $this->output->info("Attribute $key is not nullable. Set a new value");
+                }
             }
-        }
 
-        $relationAttributes = collect($relationAttributes);
-
-        $requiredRelationAttributes = $relationAttributes->filter(
-            fn(Attribute $attribute) => ! $attribute->nullable
-        );
-
-        $fillableAttributes->each(function (Attribute $attribute) use (&$modelInstance, $hiddenKeys) {
-            $key                 = $attribute->name;
-            $value               = $this->ask("Set value for $key", $attribute->default);
-            $modelInstance->$key = $value;
+            $instance->$key = $value;
         });
-
-        // TODO: Ask required and optional attributes.
-
-        $this->info($modelInstance->toJson(JSON_PRETTY_PRINT));
-
-        if ($this->confirm("Create a $modelName", true)) {
-            $modelInstance->save();
-        } else {
-            $this->output->error('Aborted instance creation');
-
-            return self::FAILURE;
-        }
-
-        return self::SUCCESS;
     }
 }
