@@ -1,6 +1,6 @@
 {
-  "name": "saggre/laravel-model-instanec",
-  "description": "",
+  "name": "saggre/laravel-model-instance",
+  "description": "Create new instances of Eloquent models with CLI",
   "keywords": [
     "laravel",
     "model",
