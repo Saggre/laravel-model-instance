@@ -18,6 +18,7 @@ return new class extends Migration {
                   ->cascadeOnDelete()
                   ->cascadeOnUpdate();
             $table->string('name');
+            $table->integer('spiciness');
             $table->timestamps();
         });
     }

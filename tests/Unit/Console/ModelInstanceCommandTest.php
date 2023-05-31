@@ -2,17 +2,51 @@
 
 namespace Saggre\LaravelModelInstance\Tests\Unit\Console;
 
+use Illuminate\Testing\PendingCommand;
 use Saggre\LaravelModelInstance\Tests\TestCase;
+use Symfony\Component\Console\Command\Command;
 
 class ModelInstanceCommandTest extends TestCase
 {
-    public function setUp(): void
+    public function instantiateDataProvider(): array
     {
-        parent::setUp();
+        return [
+            [
+                ['instantiate Pizza', []],
+                fn(PendingCommand $command) => $command
+                    ->expectsQuestion('Set value for name', 'Foo')
+                    ->expectsConfirmation('Create a Pizza', 'yes')
+                    ->assertExitCode(Command::SUCCESS)
+            ],
+            [
+                ['instantiate Sauce', []],
+                fn(PendingCommand $command) => $command
+                    ->expectsQuestion('Set value for name', 'Bar')
+                    ->expectsQuestion('Set value for spiciness', 100)
+                    ->expectsConfirmation('Create a Sauce', 'yes')
+                    ->assertExitCode(Command::SUCCESS)
+            ],
+            [
+                ['instantiate Topping', []],
+                fn(PendingCommand $command) => $command
+                    ->expectsQuestion('Set value for name', 'Baz')
+                    ->expectsQuestion('Set value for price', 2000)
+                    ->expectsConfirmation('Create a Topping', 'yes')
+                    ->assertExitCode(Command::SUCCESS)
+            ],
+        ];
     }
 
-    public function test_instantiate_pizza(): void
+    /**
+     * @dataProvider instantiateDataProvider
+     *
+     * @param array $command
+     * @param callable $expects
+     *
+     * @return void
+     */
+    public function test_instantiate(array $command, callable $expects): void
     {
-        $this->artisan('instantiate Pizza')->assertExitCode(0);
+        $expects($this->artisan(...$command));
     }
 }

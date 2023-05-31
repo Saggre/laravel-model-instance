@@ -5,6 +5,7 @@ namespace Saggre\LaravelModelInstance\Console;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
 use Saggre\LaravelModelInstance\Traits\CreatesInstances;
 use Spatie\ModelInfo\Attributes\Attribute;
@@ -96,6 +97,23 @@ class ModelInstanceCommand extends Command
     }
 
     /**
+     * Get hidden attributes.
+     *
+     * @return Collection
+     */
+    public function getHiddenAttributes(): Collection
+    {
+        return collect(array_merge(
+            $modelInstance->instanceHidden ?? [],
+            [
+                'id',
+                'created_at',
+                'updated_at',
+            ]
+        ));
+    }
+
+    /**
      * Query the user for the instantiated model's properties.
      *
      * @param ModelInfo $modelInfo
@@ -105,34 +123,24 @@ class ModelInstanceCommand extends Command
      */
     public function handleAttributes(ModelInfo $modelInfo, &$instance): void
     {
-        $hiddenAttributes = collect(array_merge(
-            $modelInstance->instanceHidden ?? [],
-            [
-                'id',
-                'created_at',
-                'updated_at',
-            ]
-        ));
+        $modelInfo->attributes
+            ->sortBy('name')
+            ->filter(fn(Attribute $attribute) => ! $this->getHiddenAttributes()->contains($attribute->name))
+            ->each(function (Attribute $attribute) use (&$instance) {
+                $key   = $attribute->name;
+                $value = null;
 
-        $modelInfo->attributes->each(function (Attribute $attribute) use (&$instance, $hiddenAttributes) {
-            $key   = $attribute->name;
-            $value = null;
+                while ($value === null) {
+                    $value = $this->ask("Set value for $key", $attribute->default);
+                    /*if ($value === null && ! $attribute->nullable) {
+                        $this->output->info("Attribute $key is not nullable. Set a new value");
+                        continue;
+                    }
 
-            if ($hiddenAttributes->contains($attribute->name)) {
-                $this->output->info("Skipped attribute $key");
-
-                return;
-            }
-
-            while ($value === null || ! $attribute->nullable) {
-                $value = $this->ask("Set value for $key", $attribute->default);
-
-                if ($value === null && ! $attribute->nullable) {
-                    $this->output->info("Attribute $key is not nullable. Set a new value");
+                    break;*/
                 }
-            }
 
-            $instance->$key = $value;
-        });
+                $instance->$key = $value;
+            });
     }
 }
