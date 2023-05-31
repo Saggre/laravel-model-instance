@@ -14,6 +14,7 @@ return new class extends Migration {
         Schema::create('toppings', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Pizza::class)
+                  ->nullable()
                   ->constrained()
                   ->cascadeOnDelete()
                   ->cascadeOnUpdate();
