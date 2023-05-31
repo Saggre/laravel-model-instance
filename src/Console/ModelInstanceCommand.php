@@ -10,7 +10,6 @@ use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
 use Saggre\LaravelModelInstance\Traits\CreatesInstances;
 use Spatie\ModelInfo\Attributes\Attribute;
 use Spatie\ModelInfo\ModelInfo;
-use Spatie\ModelInfo\Relations\Relation;
 
 class ModelInstanceCommand extends Command
 {
@@ -65,8 +64,6 @@ class ModelInstanceCommand extends Command
         /** @var Model&CreatesInstances $instance */
 
         $this->handleAttributes($instance, $info);
-
-        // $this->handleRelations($instance, $info);
 
         return $this->saveModelInstance($instance);
     }
@@ -164,42 +161,6 @@ class ModelInstanceCommand extends Command
     }
 
     /**
-     * @param Model $instance
-     * @param ModelInfo $info
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function handleRelations(Model &$instance, ModelInfo $info): void
-    {
-        $info->relations
-            ->sortBy('name')
-            ->each(function (Relation $relation) use (&$instance, $info) {
-                $key       = $relation->name;
-                $all       = $this->getRelationAttributes($info);
-                $attribute = $this->getRelationAttributes($info)->where('name', $key)->first();
-
-                /** @var Attribute|null $attribute */
-
-                if ( ! $attribute) {
-                    throw new Exception("Relation attribute not found for $key");
-                }
-
-                while ( ! $instance->{$key}) {
-                    if ($attribute->nullable && ! $this->confirm("Fill \"$key\" relation?")) {
-                        return;
-                    }
-
-                    $relationInstance = $this->createModelInstance($relation->related);
-
-                    if ($relationInstance) {
-                        call_user_func([$instance, $relation->name])->save($relationInstance);
-                    }
-                }
-            });
-    }
-
-    /**
      * Get hidden attributes.
      *
      * @param Model $instance
@@ -216,22 +177,5 @@ class ModelInstanceCommand extends Command
                 'updated_at',
             ]
         ));
-    }
-
-    /**
-     * Get relation attributes (like user_id attribute for user relation etc.).
-     *
-     * @param ModelInfo $info
-     *
-     * @return Collection
-     */
-    public function getRelationAttributes(ModelInfo $info): Collection
-    {
-        return $info->attributes
-            ->filter(
-                fn(Attribute $attribute) => $info->relations
-                    ->pluck('name')
-                    ->contains(preg_replace('/_id$/', '', $attribute->name))
-            );
     }
 }
