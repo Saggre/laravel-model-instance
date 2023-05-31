@@ -7,7 +7,6 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
-use Saggre\LaravelModelInstance\Traits\CreatesInstances;
 use Spatie\ModelInfo\Attributes\Attribute;
 use Spatie\ModelInfo\ModelInfo;
 
@@ -51,6 +50,8 @@ class ModelInstanceCommand extends Command
     }
 
     /**
+     * Create a model instance.
+     *
      * @param string $classPath
      *
      * @return Model|null
@@ -61,7 +62,7 @@ class ModelInstanceCommand extends Command
         $instance = new $classPath;
         $info     = ModelInfo::forModel($instance);
 
-        /** @var Model&CreatesInstances $instance */
+        /** @var Model $instance */
 
         $this->handleAttributes($instance, $info);
 
@@ -161,7 +162,7 @@ class ModelInstanceCommand extends Command
     }
 
     /**
-     * Get hidden attributes.
+     * Get attributes that don't need to be prompted to the user.
      *
      * @param Model $instance
      *
@@ -169,13 +170,14 @@ class ModelInstanceCommand extends Command
      */
     public function getHiddenAttributes(Model &$instance): Collection
     {
-        return collect(array_merge(
-            $instance->instanceHidden ?? [],
-            [
-                'id',
-                'created_at',
-                'updated_at',
-            ]
-        ));
+        if (method_exists($instance, 'getUninstantiable')) {
+            return $instance->getUninstantiable();
+        }
+
+        return collect([
+            'id',
+            'created_at',
+            'updated_at',
+        ]);
     }
 }

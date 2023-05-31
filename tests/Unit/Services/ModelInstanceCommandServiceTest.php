@@ -2,9 +2,9 @@
 
 namespace Saggre\LaravelModelInstance\Tests\Unit\Services;
 
-use Illuminate\Support\Collection;
 use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
 use Saggre\LaravelModelInstance\Tests\TestCase;
+use Saggre\LaravelModelInstance\Tests\TestModelInstanceCommandService;
 
 class ModelInstanceCommandServiceTest extends TestCase
 {
@@ -13,24 +13,7 @@ class ModelInstanceCommandServiceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->modelInstanceCommandService = new class extends ModelInstanceCommandService {
-            /**
-             * Get mock class paths.
-             *
-             * @return Collection
-             */
-            public function getAppModelClassPaths(): Collection
-            {
-                return collect([
-                    'Foo\\Baz\\Bar',
-                    'Foo\\Bar',
-                    'Foo\\Bar\\Baz',
-                    'Foo\\Baz',
-                    'Baz\\Bar\\Foo',
-                    'Bar\\Foo',
-                ]);
-            }
-        };
+        $this->modelInstanceCommandService = new TestModelInstanceCommandService();
     }
 
     public function modelNames(): array
@@ -62,24 +45,22 @@ class ModelInstanceCommandServiceTest extends TestCase
         return [
             [
                 [
-                    'Baz\\Bar\\Foo',
-                    'Bar\\Foo',
+                    'Saggre\\LaravelModelInstance\\Testbench\\App\\Models\\Pizza',
                 ],
-                'Foo',
+                'Pizza',
             ],
             [
                 [
-                    'Foo\\Bar\\Baz',
-                    'Foo\\Baz',
+                    'Saggre\\LaravelModelInstance\\Testbench\\App\\Models\\Topping',
                 ],
-                'Baz',
+                'Topping',
             ],
             [
                 [
-                    'Baz\\Bar\\Foo',
-                    'Bar\\Foo',
+                    'Saggre\\LaravelModelInstance\\Testbench\\App\\Models\\Sauce',
+                    'Saggre\\LaravelModelInstance\\Testbench\\App\\Models\\MayoSauce',
                 ],
-                'Foo',
+                'Sauce',
             ]
         ];
     }

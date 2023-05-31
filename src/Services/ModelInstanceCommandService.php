@@ -3,6 +3,7 @@
 namespace Saggre\LaravelModelInstance\Services;
 
 use Illuminate\Support\Collection;
+use Saggre\LaravelModelInstance\Traits\Instantiable;
 use Spatie\ModelInfo\ModelFinder;
 
 class ModelInstanceCommandService
@@ -48,8 +49,12 @@ class ModelInstanceCommandService
         $appModels = $this->getAppModelClassPaths();
         $model     = $this->normalizeModelName($model);
 
-        return $appModels->filter(
-            fn($appModelClassPath) => $model === class_basename($appModelClassPath)
-        )->values();
+        return $appModels
+            ->filter(
+                fn($appModelClassPath) => str_contains(class_basename($appModelClassPath), $model)
+            )->filter(
+                fn($appModelClassPath) => in_array(Instantiable::class, class_uses_recursive($appModelClassPath))
+            )
+            ->values();
     }
 }
