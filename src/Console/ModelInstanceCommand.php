@@ -155,10 +155,14 @@ class ModelInstanceCommand extends Command
                     $default = $service->getAttributeDefaultValue($attribute, $instance);
 
                     try {
-                        $options = $service->getAttributeOptions($attribute, $instance);
+                        $options = $service->getAttributeOptions($attribute);
                         $value   = $this->choice("Set value for $key", $options, $default);
                     } catch (Exception) {
-                        $value = $this->ask("Set value for $key", $default);
+                        if ($attribute->phpType === 'bool') {
+                            $value = $this->confirm("Set value for $key", $default);
+                        } else {
+                            $value = $this->ask("Set value for $key", $default);
+                        }
                     }
 
                     if ($value === 'null') {
