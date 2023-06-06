@@ -156,7 +156,7 @@ class ModelInstanceCommand extends Command
                     try {
                         $options = $service->getAttributeOptions($attribute, $instance);
                         $value   = $this->choice("Set value for $key", $options, $default);
-                    } catch (Exception $e) {
+                    } catch (Exception) {
                         $value = $this->ask("Set value for $key", $default);
                     }
 
@@ -172,6 +172,7 @@ class ModelInstanceCommand extends Command
                 $value = $service->filterAttributeValue($attribute, $instance, $value);
 
                 $instance->$key = $value;
+                $instance->makeVisible($key);
                 $this->info($value);
             }
         ));
