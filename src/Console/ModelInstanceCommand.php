@@ -146,14 +146,15 @@ class ModelInstanceCommand extends Command
 
         $attributes->each(fn(Collection $collection) => $collection->each(
             function (Attribute $attribute) use (&$instance) {
-                $key   = $attribute->name;
-                $value = null;
+                $service = $this->modelInstanceCommandService;
+                $key     = $attribute->name;
+                $value   = null;
 
                 while ($value === null) {
-                    $default = $this->getAttributeDefaultValue($attribute, $instance);
+                    $default = $service->getAttributeDefaultValue($attribute, $instance);
 
                     try {
-                        $options = $this->getAttributeOptions($attribute, $instance);
+                        $options = $service->getAttributeOptions($attribute, $instance);
                         $value   = $this->choice("Set value for $key", $options, $default);
                     } catch (Exception $e) {
                         $value = $this->ask("Set value for $key", $default);
@@ -168,75 +169,11 @@ class ModelInstanceCommand extends Command
                     }
                 }
 
-                $instance->$key = $this->filterAttributeValue($attribute, $instance, $value);
+                $instance->$key = $service->filterAttributeValue($attribute, $instance,
+                    $value);
                 $this->info($value);
             }
         ));
-    }
-
-    /**
-     * Get options for an attribute.
-     *
-     * @param Attribute $attribute
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function getAttributeOptions(Attribute $attribute): array
-    {
-        if ($attribute->cast && enum_exists($attribute->cast)) {
-            $cases = call_user_func([$attribute->cast, 'cases']);
-
-            return array_column($cases, 'value');
-        }
-
-        throw new Exception('No options found for attribute');
-    }
-
-    /**
-     * Filter an attribute value.
-     *
-     * @param Attribute $attribute
-     * @param Model&Instantiable $instance
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function filterAttributeValue(Attribute $attribute, Model $instance, mixed $value): mixed
-    {
-        if (method_exists($instance, 'getInstantiationFilters')) {
-            $filters = $instance->getInstantiationFilters();
-        } else {
-            $filters = collect();
-        }
-
-        if ($filters->has($attribute->name)) {
-            $filter = $filters->get($attribute->name);
-
-            return $filter($value);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Get default value for an attribute.
-     *
-     * @param Attribute $attribute
-     * @param Model&Instantiable $instance
-     *
-     * @return mixed|null
-     */
-    public function getAttributeDefaultValue(Attribute $attribute, Model $instance): mixed
-    {
-        if (method_exists(
-                $instance,
-                'getInstantiationDefaults'
-            ) && $instance->getInstantiationDefaults()->has($attribute->name)) {
-            return $instance->getInstantiationDefaults()->get($attribute->name);
-        }
-
-        return $attribute->default ?? null;
     }
 
     /**

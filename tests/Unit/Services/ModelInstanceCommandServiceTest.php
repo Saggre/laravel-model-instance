@@ -2,9 +2,14 @@
 
 namespace Saggre\LaravelModelInstance\Tests\Unit\Services;
 
+use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
+use Saggre\LaravelModelInstance\Testbench\App\Models\Pizza;
 use Saggre\LaravelModelInstance\Tests\TestCase;
 use Saggre\LaravelModelInstance\Tests\TestModelInstanceCommandService;
+use Spatie\ModelInfo\Attributes\Attribute;
+use Spatie\ModelInfo\ModelInfo;
 
 class ModelInstanceCommandServiceTest extends TestCase
 {
@@ -16,7 +21,7 @@ class ModelInstanceCommandServiceTest extends TestCase
         $this->modelInstanceCommandService = new TestModelInstanceCommandService();
     }
 
-    public function modelNames(): array
+    public function normalizeModelNameTestCases(): array
     {
         return [
             ['UserRole', 'App\Models\UserRole'],
@@ -30,7 +35,7 @@ class ModelInstanceCommandServiceTest extends TestCase
     }
 
     /**
-     * @dataProvider modelNames
+     * @dataProvider normalizeModelNameTestCases
      */
     public function test_normalize_model_name(string $expected, string $input)
     {
@@ -40,7 +45,7 @@ class ModelInstanceCommandServiceTest extends TestCase
         );
     }
 
-    public function candidateTestCases(): array
+    public function findAppModelCandidateClassPathsTestCases(): array
     {
         return [
             [
@@ -66,7 +71,7 @@ class ModelInstanceCommandServiceTest extends TestCase
     }
 
     /**
-     * @dataProvider candidateTestCases
+     * @dataProvider findAppModelCandidateClassPathsTestCases
      */
     public function test_find_app_model_candidate_class_paths(array $expected, string $input)
     {
@@ -75,4 +80,48 @@ class ModelInstanceCommandServiceTest extends TestCase
             $this->modelInstanceCommandService->findAppModelCandidateClassPaths($input)->toArray()
         );
     }
+
+    /**
+     * @throws Exception
+     */
+    /*public function test_get_attribute_options(array $expected, Attribute $input)
+    {
+        $this->assertEquals(
+            $expected,
+            $this->modelInstanceCommandService->getAttributeOptions($input)
+        );
+    }
+
+    public function test_filter_attribute_value(mixed $expected, Attribute $input, Model $model, mixed $value)
+    {
+        $this->assertEquals(
+            $expected,
+            $this->modelInstanceCommandService->filterAttributeValue($input, $model, $value)
+        );
+    }
+
+    public function getAttributeDefaultValueTestCases(): array
+    {
+        $pizza = Pizza::factory()->create([
+            'name' => 'Margherita',
+        ]);
+
+        $info = ModelInfo::forModel($pizza);
+
+        return [
+            [
+                'Margherita',
+                $info->attributes->firstWhere('name', 'name'),
+                $pizza,
+            ],
+        ];
+    }
+
+    public function test_get_attribute_default_value(mixed $expected, Attribute $input, Model $model)
+    {
+        $this->assertEquals(
+            $expected,
+            $this->modelInstanceCommandService->getAttributeDefaultValue($input, $model)
+        );
+    }*/
 }
