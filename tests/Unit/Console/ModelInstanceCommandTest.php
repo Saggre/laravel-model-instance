@@ -3,6 +3,7 @@
 namespace Saggre\LaravelModelInstance\Tests\Unit\Console;
 
 use Illuminate\Testing\PendingCommand;
+use Saggre\LaravelModelInstance\Testbench\App\Enums\PizzaTypeEnum;
 use Saggre\LaravelModelInstance\Testbench\App\Models\MayoSauce;
 use Saggre\LaravelModelInstance\Testbench\App\Models\Sauce;
 use Saggre\LaravelModelInstance\Tests\TestCase;
@@ -16,6 +17,11 @@ class ModelInstanceCommandTest extends TestCase
             'Create a pizza instance'                       => [
                 ['instantiate Pizza', []],
                 fn(PendingCommand $command) => $command
+                    ->expectsChoice(
+                        'Set value for crust',
+                        PizzaTypeEnum::PAN_PIZZA->value,
+                        array_column(PizzaTypeEnum::cases(), 'value')
+                    )
                     ->expectsQuestion('Set value for name', 'Foo')
                     ->expectsConfirmation('Create a Pizza', 'yes')
                     ->assertExitCode(Command::SUCCESS)

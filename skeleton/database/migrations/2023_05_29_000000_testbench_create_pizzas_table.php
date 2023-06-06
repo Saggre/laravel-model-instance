@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Saggre\LaravelModelInstance\Testbench\App\Enums\PizzaTypeEnum;
 
 return new class extends Migration {
     /**
@@ -13,6 +14,7 @@ return new class extends Migration {
         Schema::create('pizzas', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('crust', array_column(PizzaTypeEnum::cases(), 'value'));
             $table->timestamps();
         });
     }

@@ -147,7 +147,13 @@ class ModelInstanceCommand extends Command
 
                 while ($value === null) {
                     $default = $this->getAttributeDefaultValue($attribute, $instance);
-                    $value   = $this->ask("Set value for $key", $default);
+
+                    try {
+                        $options = $this->getAttributeOptions($attribute, $instance);
+                        $value   = $this->choice("Set value for $key", $options, $default);
+                    } catch (Exception $e) {
+                        $value = $this->ask("Set value for $key", $default);
+                    }
 
                     if ($value === 'null') {
                         $value = null;
@@ -164,12 +170,31 @@ class ModelInstanceCommand extends Command
     }
 
     /**
+     * Get options for an attribute.
+     *
+     * @param Attribute $attribute
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getAttributeOptions(Attribute $attribute): array
+    {
+        if ($attribute->cast && enum_exists($attribute->cast)) {
+            $cases = call_user_func([$attribute->cast, 'cases']);
+
+            return array_column($cases, 'value');
+        }
+
+        throw new Exception('No options found for attribute');
+    }
+
+    /**
      * Get default value for an attribute.
      *
      * @param Attribute $attribute
      * @param Model&Instantiable $instance
      *
-     * @return mixed
+     * @return mixed|null
      */
     public function getAttributeDefaultValue(Attribute $attribute, Model $instance): mixed
     {
@@ -180,7 +205,7 @@ class ModelInstanceCommand extends Command
             return $instance->getInstantiationDefaults()->get($attribute->name);
         }
 
-        return $attribute->default ?? 'null';
+        return $attribute->default ?? null;
     }
 
     /**

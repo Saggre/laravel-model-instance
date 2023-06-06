@@ -5,6 +5,7 @@ namespace Saggre\LaravelModelInstance\Testbench\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Saggre\LaravelModelInstance\Testbench\App\Enums\PizzaTypeEnum;
 use Saggre\LaravelModelInstance\Traits\Instantiable;
 
 class Pizza extends Model
@@ -13,6 +14,11 @@ class Pizza extends Model
 
     protected $fillable = [
         'name',
+        'crust',
+    ];
+
+    protected $casts = [
+        'crust' => PizzaTypeEnum::class,
     ];
 
     public function sauce(): HasOne
