@@ -142,6 +142,7 @@ class ModelInstanceCommand extends Command
             ->sortBy('name')
             ->filter(fn(Attribute $attribute
             ) => $this->getHiddenAttributes($instance, $info)->doesntContain($attribute->name))
+            ->filter(fn(Attribute $attribute) => empty($attribute->appended))
             ->groupBy(fn(Attribute $attribute) => str_ends_with($attribute->name, '_id') ? 'relation' : 'attribute');
 
         $attributes->each(fn(Collection $collection) => $collection->each(
