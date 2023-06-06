@@ -41,6 +41,10 @@ class ModelInstanceCommand extends Command
             if ( ! $instance) {
                 throw new Exception('Instance creation skipped');
             }
+
+            $this->info($instance->toJson(JSON_PRETTY_PRINT));
+            $modelName = class_basename($instance);
+            $this->info("Created a $modelName");
         } catch (Exception $e) {
             $this->error($e->getMessage());
 
