@@ -38,7 +38,6 @@ class ModelInstanceCommandTest extends TestCase
                 fn(PendingCommand $command) => $command
                     ->expectsQuestion('Set value for name', 'Baz')
                     ->expectsQuestion('Set value for price', 2000)
-                    ->expectsConfirmation('Set value for pizza_id', 'null')
                     ->expectsConfirmation('Create a Topping', 'yes')
                     ->assertExitCode(Command::SUCCESS)
             ],

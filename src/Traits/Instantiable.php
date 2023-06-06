@@ -6,19 +6,23 @@ use Illuminate\Support\Collection;
 
 trait Instantiable
 {
-    protected $uninstantiable = [
-        'id',
-        'created_at',
-        'updated_at',
-    ];
-
     /**
-     * Get properties that can't or don't need to be instantiated.
+     * Get properties that can be instantiated.
      *
      * @return Collection<string>
      */
-    public function getUninstantiable(): Collection
+    public function getInstantiableProperties(): Collection
     {
-        return collect($this->uninstantiable);
+        return collect();
+    }
+
+    /**
+     * Get default values for properties that can be instantiated.
+     *
+     * @return Collection
+     */
+    public function getInstantiationDefaults(): Collection
+    {
+        return collect();
     }
 }

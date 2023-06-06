@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Saggre\LaravelModelInstance\Services\ModelInstanceCommandService;
+use Saggre\LaravelModelInstance\Traits\Instantiable;
 use Spatie\ModelInfo\Attributes\Attribute;
 use Spatie\ModelInfo\ModelInfo;
 
@@ -136,7 +137,7 @@ class ModelInstanceCommand extends Command
         $attributes = $info->attributes
             ->sortBy('name')
             ->filter(fn(Attribute $attribute
-            ) => $this->getHiddenAttributes($instance)->doesntContain($attribute->name))
+            ) => $this->getHiddenAttributes($instance, $info)->doesntContain($attribute->name))
             ->groupBy(fn(Attribute $attribute) => str_ends_with($attribute->name, '_id') ? 'relation' : 'attribute');
 
         $attributes->each(fn(Collection $collection) => $collection->each(
@@ -145,7 +146,8 @@ class ModelInstanceCommand extends Command
                 $value = null;
 
                 while ($value === null) {
-                    $value = $this->ask("Set value for $key", $attribute->default ?? 'null');
+                    $default = $this->getAttributeDefaultValue($attribute, $instance);
+                    $value   = $this->ask("Set value for $key", $default);
 
                     if ($value === 'null') {
                         $value = null;
@@ -162,22 +164,50 @@ class ModelInstanceCommand extends Command
     }
 
     /**
+     * Get default value for an attribute.
+     *
+     * @param Attribute $attribute
+     * @param Model&Instantiable $instance
+     *
+     * @return mixed
+     */
+    public function getAttributeDefaultValue(Attribute $attribute, Model $instance): mixed
+    {
+        if (method_exists(
+                $instance,
+                'getInstantiationDefaults'
+            ) && $instance->getInstantiationDefaults()->has($attribute->name)) {
+            return $instance->getInstantiationDefaults()->get($attribute->name);
+        }
+
+        return $attribute->default ?? 'null';
+    }
+
+    /**
      * Get attributes that don't need to be prompted to the user.
      *
-     * @param Model $instance
+     * @param Model&Instantiable $instance
+     * @param ModelInfo $info
      *
      * @return Collection
      */
-    public function getHiddenAttributes(Model &$instance): Collection
+    public function getHiddenAttributes(Model &$instance, ModelInfo $info): Collection
     {
-        if (method_exists($instance, 'getUninstantiable')) {
-            return $instance->getUninstantiable();
+        $attributes = $info->attributes
+            ->filter(fn(Attribute $attribute) => $attribute->nullable || $attribute->default !== null)
+            ->map(fn(Attribute $attribute) => $attribute->name);
+
+        if (method_exists($instance, 'getInstantiableProperties')) {
+            $instantiableProperties = $instance->getInstantiableProperties();
+        } else {
+            $instantiableProperties = collect();
         }
 
         return collect([
             'id',
             'created_at',
             'updated_at',
-        ]);
+        ])->merge($attributes)
+          ->merge($instantiableProperties);
     }
 }
