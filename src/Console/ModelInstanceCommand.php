@@ -204,6 +204,6 @@ class ModelInstanceCommand extends Command
             'created_at',
             'updated_at',
         ])->merge($attributes)
-          ->merge($instantiableProperties);
+          ->filter(fn(string $attribute) => ! $instantiableProperties->contains($attribute));
     }
 }

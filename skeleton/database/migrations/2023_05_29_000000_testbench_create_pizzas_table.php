@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('password');
+            $table->boolean('has_sauce')->default(true);
+            $table->boolean('has_mayo')->default(false);
             $table->enum('crust', array_column(PizzaTypeEnum::cases(), 'value'));
             $table->timestamps();
         });

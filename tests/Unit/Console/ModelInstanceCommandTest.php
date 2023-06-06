@@ -22,6 +22,7 @@ class ModelInstanceCommandTest extends TestCase
                         PizzaTypeEnum::PAN_PIZZA->value,
                         array_column(PizzaTypeEnum::cases(), 'value')
                     )
+                    ->expectsConfirmation('Set value for has_sauce', 'yes')
                     ->expectsQuestion('Set value for name', 'Foo')
                     ->expectsQuestion('Set value for password', '12345678')
                     ->expectsConfirmation('Create a Pizza', 'yes')
