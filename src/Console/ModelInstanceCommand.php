@@ -168,7 +168,7 @@ class ModelInstanceCommand extends Command
                     }
                 }
 
-                $instance->$key = $value;
+                $instance->$key = $this->filterAttributeValue($attribute, $instance, $value);
             }
         ));
     }
@@ -190,6 +190,32 @@ class ModelInstanceCommand extends Command
         }
 
         throw new Exception('No options found for attribute');
+    }
+
+    /**
+     * Filter an attribute value.
+     *
+     * @param Attribute $attribute
+     * @param Model&Instantiable $instance
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function filterAttributeValue(Attribute $attribute, Model $instance, mixed $value): mixed
+    {
+        if (method_exists($instance, 'getInstantiationFilters')) {
+            $filters = $instance->getInstantiationFilters();
+        } else {
+            $filters = collect();
+        }
+
+        if ($filters->has($attribute->name)) {
+            $filter = $filters->get($attribute->name);
+
+            return $filter($value);
+        }
+
+        return $value;
     }
 
     /**

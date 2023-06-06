@@ -16,19 +16,20 @@ class ModelInstanceCommandTest extends TestCase
         return [
             'Create a pizza instance'                       => [
                 ['instantiate Pizza', []],
-                fn(PendingCommand $command) => $command
+                fn(PendingCommand $command, TestCase $test) => $command
                     ->expectsChoice(
                         'Set value for crust',
                         PizzaTypeEnum::PAN_PIZZA->value,
                         array_column(PizzaTypeEnum::cases(), 'value')
                     )
                     ->expectsQuestion('Set value for name', 'Foo')
+                    ->expectsQuestion('Set value for password', '12345678')
                     ->expectsConfirmation('Create a Pizza', 'yes')
                     ->assertExitCode(Command::SUCCESS)
             ],
             'Create a sauce instance with a pizza relation' => [
                 ['instantiate Sauce', []],
-                fn(PendingCommand $command) => $command
+                fn(PendingCommand $command, TestCase $test) => $command
                     ->expectsChoice('Select class path', Sauce::class, [
                         Sauce::class,
                         MayoSauce::class,
@@ -41,7 +42,7 @@ class ModelInstanceCommandTest extends TestCase
             ],
             'Create a topping instance'                     => [
                 ['instantiate Topping', []],
-                fn(PendingCommand $command) => $command
+                fn(PendingCommand $command, TestCase $test) => $command
                     ->expectsQuestion('Set value for name', 'Baz')
                     ->expectsQuestion('Set value for price', 2000)
                     ->expectsConfirmation('Create a Topping', 'yes')
@@ -49,7 +50,7 @@ class ModelInstanceCommandTest extends TestCase
             ],
             'Create a non-existend instance'                => [
                 ['instantiate Foobar', []],
-                fn(PendingCommand $command) => $command
+                fn(PendingCommand $command, TestCase $test) => $command
                     ->expectsOutput('No class found for Foobar')
                     ->assertExitCode(Command::FAILURE)
             ],
@@ -66,6 +67,6 @@ class ModelInstanceCommandTest extends TestCase
      */
     public function test_instantiate(array $command, callable $expects): void
     {
-        $expects($this->artisan(...$command));
+        $expects($this->artisan(...$command), $this);
     }
 }

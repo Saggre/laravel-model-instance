@@ -15,6 +15,7 @@ class Pizza extends Model
     protected $fillable = [
         'name',
         'crust',
+        'password',
     ];
 
     protected $casts = [

@@ -3,6 +3,7 @@
 namespace Saggre\LaravelModelInstance\Traits;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 
 trait Instantiable
 {
@@ -24,5 +25,17 @@ trait Instantiable
     public function getInstantiationDefaults(): Collection
     {
         return collect();
+    }
+
+    /**
+     * Get filters for property values that can be instantiated.
+     *
+     * @return Collection
+     */
+    public function getInstantiationFilters(): Collection
+    {
+        return collect([
+            'password' => fn($value) => Hash::make($value),
+        ]);
     }
 }
