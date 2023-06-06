@@ -169,6 +169,7 @@ class ModelInstanceCommand extends Command
                 }
 
                 $instance->$key = $this->filterAttributeValue($attribute, $instance, $value);
+                $this->info($value);
             }
         ));
     }
