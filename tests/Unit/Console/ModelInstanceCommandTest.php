@@ -3,15 +3,16 @@
 namespace Saggre\LaravelModelInstance\Tests\Unit\Console;
 
 use Illuminate\Testing\PendingCommand;
-use Saggre\LaravelModelInstance\Testbench\App\Enums\PizzaTypeEnum;
-use Saggre\LaravelModelInstance\Testbench\App\Models\MayoSauce;
-use Saggre\LaravelModelInstance\Testbench\App\Models\Sauce;
+use PHPUnit\Framework\Attributes\DataProvider;
+use App\Enums\PizzaTypeEnum;
+use App\Models\MayoSauce;
+use App\Models\Sauce;
 use Saggre\LaravelModelInstance\Tests\TestCase;
 use Symfony\Component\Console\Command\Command;
 
 class ModelInstanceCommandTest extends TestCase
 {
-    public function instantiateDataProvider(): array
+    public static function instantiateDataProvider(): array
     {
         return [
             'Create a pizza instance'                       => [
@@ -59,13 +60,13 @@ class ModelInstanceCommandTest extends TestCase
     }
 
     /**
-     * @dataProvider instantiateDataProvider
      *
      * @param array $command
      * @param callable $expects
      *
      * @return void
      */
+    #[DataProvider('instantiateDataProvider')]
     public function test_instantiate(array $command, callable $expects): void
     {
         $expects($this->artisan(...$command), $this);

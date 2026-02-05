@@ -28,6 +28,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
 
     public static function applicationBasePath(): string
     {
-        return dirname(__DIR__).'/skeleton';
+        return dirname(__DIR__).'/workbench';
     }
 }

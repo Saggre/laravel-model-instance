@@ -109,6 +109,10 @@ class ModelInstanceCommand extends Command
             throw new Exception('No model name provided');
         }
 
+        if (class_exists($inputModel)) {
+            return $inputModel;
+        }
+
         $classPaths = $this->modelInstanceCommandService->findAppModelCandidateClassPaths($inputModel);
 
         if ($classPaths->isEmpty()) {

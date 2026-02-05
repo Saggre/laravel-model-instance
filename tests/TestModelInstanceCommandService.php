@@ -18,7 +18,7 @@ class TestModelInstanceCommandService extends ModelInstanceCommandService
         return ModelFinder::all(
             null,
             null,
-            'Saggre\\LaravelModelInstance\\Testbench'
+            ''
         );
     }
 }
